@@ -19,15 +19,23 @@
           "width": 0.0
         },
         "path": {
+          "arrowSize": 6,
+          "arrowWeight": 3.0,
           "arrows": false,
           "length": 0.10000000149011612,
-          "weight": 0.0,
-          "width": 0.0
+          "style": "Line",
+          "weight": 0.10000000149011612,
+          "width": 0.10000000149011612
         },
         "window": {
           "visible": true
         }
       }
+    }
+  },
+  "NetworkTables": {
+    "Persistent Values": {
+      "open": false
     }
   }
 }

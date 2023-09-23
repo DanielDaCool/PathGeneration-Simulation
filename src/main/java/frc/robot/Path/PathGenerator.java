@@ -23,62 +23,61 @@ import edu.wpi.first.math.trajectory.Trajectory.State;
 public class PathGenerator {
 
         PathPoint[] states;
-        ArrayList<Pose2d> pathpoints;
+        ArrayList<PathPoint> pathpoints;
         TrajectoryConfig config;
 
         public PathGenerator(TrajectoryConfig config, PathPoint... states) {
                 this.states = states;
                 this.config = config;
-                pathpoints = new ArrayList<Pose2d>();
+                pathpoints = new ArrayList<PathPoint>();
         }
 
         public Trajectory getOriginalPoints(){
-                ArrayList<Pose2d> original = new ArrayList<Pose2d>();
+                ArrayList<PathPoint> original = new ArrayList<PathPoint>();
                 for(PathPoint point:states){
-                        original.add(point.pose);
+                        original.add(point);
                 }
-                return new Trajectory(poseToState(original));
+                return new Trajectory(PathPointToState(original));
         }
 
         public Trajectory generateTrajectory() {
                 
-                
-
-                pathpoints.add(new Pose2d(states[0].pose.getTranslation(), Rotation2d.fromDegrees(0)));
+                pathpoints.add(states[0]);
                 System.out.println("STATES LENGTH" + states.length);
                 for (int i = 1; i < states.length - 1; i++) {
-                        ArrayList<Translation2d> tempArr = transform(states[i - 1].pose,
-                                        states[i].pose, states[i + 1].pose, states[i].radius, 5);
+                        ArrayList<PathPoint> tempArr = transform(states[i - 1].pose,
+                                        states[i].pose, states[i + 1].pose, states[i].radius
+                                        , states[i].velocitySize, 10);
 
-                        Translation2d[] arr = tempArr.toArray(new Translation2d[tempArr.size()]);
+                        PathPoint[] arr = tempArr.toArray(new PathPoint[tempArr.size()]);
                         System.out.println(arr.length + "LENGTHHH");
                         for (int j = 0; j < arr.length; j++) {
-                                pathpoints.add(new Pose2d(arr[j], Rotation2d.fromDegrees(0)));
+                                pathpoints.add(arr[j]);
                                 System.out.println("ADDED " + arr[j].toString());
                         }
                 }
 
 
-                pathpoints.add(new Pose2d(states[states.length - 1].pose.getTranslation(), Rotation2d.fromDegrees(0)));
-                return new Trajectory(poseToState(pathpoints));
+                pathpoints.add(states[states.length-1]);
+                return new Trajectory(PathPointToState(pathpoints));
         }
 
-        private ArrayList<Translation2d> transform(Pose2d previousPose, Pose2d pose, Pose2d nextPose, double radius,
-                        double increment) {
+        private ArrayList<PathPoint> transform(Pose2d previousPathPoint, Pose2d pathPoint, Pose2d nextPathPoints, double radius,
+                        double velocityAtPathPoint, double increment) {
 
-                Translation2d circle = calcCircleCenter(previousPose, pose, nextPose, radius);
+                Translation2d circle = calcCircleCenter(previousPathPoint, pathPoint, nextPathPoints, radius);
                 System.out.println("test" + new Translation2d(1, 1).toString());
                 System.out.println("CIRCLE::: " + circle.toString());
                 // finding the line equasions, line - AX + BY + C -> [A,B,C]
                 double[] firstLine = {
-                                pose.getY() - previousPose.getY(),
-                                previousPose.getX() - pose.getX(),
-                                pose.getX() * previousPose.getY() - previousPose.getX() * pose.getY()
+                                pathPoint.getY() - previousPathPoint.getY(),
+                                previousPathPoint.getX() - pathPoint.getX(),
+                                pathPoint.getX() * previousPathPoint.getY() - previousPathPoint.getX() * pathPoint.getY()
                 };
                 double[] secondLine = {
-                                pose.getY() - nextPose.getY(),
-                                nextPose.getX() - pose.getX(),
-                                pose.getX() * nextPose.getY() - nextPose.getX() * pose.getY()
+                                pathPoint.getY() - nextPathPoints.getY(),
+                                nextPathPoints.getX() - pathPoint.getX(),
+                                pathPoint.getX() * nextPathPoints.getY() - nextPathPoints.getX() * pathPoint.getY()
                 };
 
                 ///find tangent points
@@ -89,34 +88,38 @@ public class PathGenerator {
                 Translation2d first = firstTangent.minus(circle);
                 Translation2d second = seconTangent.minus(circle);
                 double angleByArgPoints = second.getAngle().minus(first.getAngle()).getDegrees();
-                System.out.println("ANGLE BETWEEN POINTS" + angleByArgPoints);
+                System.out.println("ANGLE BETWEEN POINTS " + angleByArgPoints + "FIRST: " + first + "second: " + second);
 
                 // generate the list of points
-                ArrayList<Translation2d> points = new ArrayList<Translation2d>();
+                ArrayList<PathPoint> points = new ArrayList<PathPoint>();
                 for (int i = 0; i < Math.abs(angleByArgPoints); i += increment) {
                         Translation2d rotated = circle.plus(new Translation2d(radius, first.getAngle())
                                 .rotateBy(Rotation2d.fromDegrees(Math.signum(angleByArgPoints)*i)));
-
-                        points.add(rotated);
-                        System.out.println("ROTATED" + rotated.toString());
+                        Translation2d velocity;
+                                if(i+increment < Math.abs(angleByArgPoints)){
+                                velocity = new Translation2d(radius, first.getAngle())
+                                        .rotateBy(Rotation2d.fromDegrees(Math.signum(angleByArgPoints)*(i + Math.signum(angleByArgPoints)*increment)))
+                                        .minus(new Translation2d(radius, first.getAngle()).rotateBy(Rotation2d.fromDegrees(Math.signum(angleByArgPoints)*i)))
+                                        .rotateBy(Rotation2d.fromDegrees(angleByArgPoints > 0? 0: 180));
+                                System.out.println("VELCALC " + rotated.rotateBy(Rotation2d.fromDegrees(increment * Math.signum(angleByArgPoints))).toString());
+                                }else{
+                                velocity = new Translation2d(velocityAtPathPoint
+                                        , nextPathPoints.getTranslation().minus(rotated).getAngle());
+                                }
+                        points.add(new PathPoint(new Pose2d(rotated, velocity.getAngle()), velocity, 0));
+                        System.out.println("ROTATED " + rotated.toString() + " " + velocity.toString());
                 }
-
-                // calculate speeds
-                // ArrayList<PathPoint> pathPoints = new ArrayList<PathPoint>();
-                // for (int i = 0; i < points.size(); i++) {
-                //         // speeds
-                // }
 
                 // null!
                 return points;
         }
 
-        private ArrayList<State> poseToState(ArrayList<Pose2d> pose) {
+        private ArrayList<State> PathPointToState(ArrayList<PathPoint> points) {
                 ArrayList<State> result = new ArrayList<>();
-                for (Pose2d iterable : pose) {
+                for (PathPoint iterable : points) {
                         State temp = new State();
-                        temp.poseMeters = iterable;
-                        temp.velocityMetersPerSecond = 1;
+                        temp.poseMeters = iterable.pose;
+                        temp.velocityMetersPerSecond = iterable.velocitySize;
                         result.add(temp);
                 }
                 return result;
@@ -140,7 +143,6 @@ public class PathGenerator {
                 System.out.println("k " + k);
                 System.out.println("X " + x);
                 System.out.println("Y " + y);
-
 
                 return new Translation2d(x, y);
         }

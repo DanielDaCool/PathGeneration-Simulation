@@ -10,12 +10,20 @@ import edu.wpi.first.math.geometry.Translation2d;
 /** Add your docs here. */
 public class PathPoint {
     public Pose2d pose;
-    public Translation2d velocity;
+    public double velocitySize;
+    public Translation2d velociotyTranslation;
     public double radius;
 
-    public PathPoint(Pose2d pose, Translation2d velocity, double radius){
+    public PathPoint(Pose2d pose, double velocitySize, double radius){
         this.pose = pose;
-        this.velocity = velocity;
+        this.velocitySize = velocitySize;
+        this.radius = radius;
+    }
+
+    public PathPoint(Pose2d pose, Translation2d velociotyTranslation, double radius){
+        this.pose = pose;
+        this.velociotyTranslation = velociotyTranslation;
+        velocitySize = velociotyTranslation.getNorm();
         this.radius = radius;
     }
 

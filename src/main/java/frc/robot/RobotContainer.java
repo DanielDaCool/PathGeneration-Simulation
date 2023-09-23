@@ -50,19 +50,19 @@ public class RobotContainer {
     Pose2d one = new Pose2d(new Translation2d(0, 2), Rotation2d.fromDegrees(0));
     Pose2d two = new Pose2d(new Translation2d(2, 2), Rotation2d.fromDegrees(0));
     Pose2d three = new Pose2d(new Translation2d(2, 4), Rotation2d.fromDegrees(0));
-    Pose2d four = new Pose2d(new Translation2d(2.7, 4.5), Rotation2d.fromDegrees(0));
-    Pose2d five = new Pose2d(new Translation2d(4, 2), Rotation2d.fromDegrees(0));
-    Pose2d six = new Pose2d(new Translation2d(5, 4), Rotation2d.fromDegrees(0));
-    Pose2d seven = new Pose2d(new Translation2d(5, 5), Rotation2d.fromDegrees(0));
+    Pose2d four = new Pose2d(new Translation2d(4, 4), Rotation2d.fromDegrees(0));
+    Pose2d five = new Pose2d(new Translation2d(7, 6.5), Rotation2d.fromDegrees(0));
+    Pose2d six = new Pose2d(new Translation2d(10,6.5), Rotation2d.fromDegrees(0));
+    Pose2d seven = new Pose2d(new Translation2d(10, 0), Rotation2d.fromDegrees(0));
 
 
-    PathPoint oneP = new PathPoint(one, new Translation2d(), 0);
-    PathPoint twoP = new PathPoint(two, new Translation2d(), 1);
-    PathPoint threeP = new PathPoint(three, new Translation2d(), 0.5);
-    PathPoint fourP = new PathPoint(four, new Translation2d(), 0.2);
-    PathPoint fiveP = new PathPoint(five, new Translation2d(), 0.2);
-    PathPoint sixP = new PathPoint(six, new Translation2d(), 0.2);
-    PathPoint sevenP = new PathPoint(seven, new Translation2d(), 0);
+    PathPoint oneP = new PathPoint(one, 1, 0);
+    PathPoint twoP = new PathPoint(two, 1, 1);
+    PathPoint threeP = new PathPoint(three, 1, 0.5);
+    PathPoint fourP = new PathPoint(four, 1, 0.8);
+    PathPoint fiveP = new PathPoint(five, 1, 0.5);
+    PathPoint sixP = new PathPoint(six, 1, 0.3);
+    PathPoint sevenP = new PathPoint(seven, 1, 0);
 
 
     SmartDashboard.putData(field);
