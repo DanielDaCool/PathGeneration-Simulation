@@ -27,15 +27,24 @@ public class TrapezoidMotion {
 
     public double calculate(){
         double distanceLeft = distance - distanceMoved.get();
+        System.out.println("DL: " + distanceLeft);
+        System.out.println("DLV: " + distanceToEndVelDec());
         if(distanceLeft > distanceToEndVelDec()){
+            System.out.println("ACCELERATE");
             return Math.min(currentVelocity.get() + acceleration, maxVelocity);
         }else{
+            System.out.println("DEACCELERATE");
             return Math.max(endVelocity, currentVelocity.get() - acceleration);
         }
     }
 
     private double distanceToEndVelDec(){
-        return (Math.pow(endVelocity, 2) - Math.pow(currentVelocity.get(), 2))/2*acceleration;
+        System.out.println("DTEV=== END " + endVelocity + " CUR: " + currentVelocity.get() + " ACCEL " + acceleration);
+        return (Math.pow(endVelocity, 2) - Math.pow(currentVelocity.get(), 2))/(2*(acceleration*-1));
+    }
+
+    public boolean isFinished(){
+        return distanceMoved.get() >= distance;
     }
 
 }

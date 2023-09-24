@@ -4,18 +4,22 @@
 
 package frc.robot;
 
-import frc.robot.Constants.OperatorConstants;
+import frc.robot.Path.FollowPath;
+import frc.robot.Path.FollowSection;
+//import frc.robot.Constants.OperatorConstants;
 import frc.robot.Path.PathGenerator;
 import frc.robot.Path.PathPoint;
-import frc.robot.commands.Autos;
-import frc.robot.commands.ExampleCommand;
+import frc.robot.commands.Drive;
 import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.chassis.Chassis;
+import frc.robot.subsystems.chassis.ChassisConstants;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -37,6 +41,11 @@ public class RobotContainer {
   PathGenerator pathgen;
   Trajectory traj;
   Trajectory origin;
+  Chassis chassis;
+  PathPoint oneP;
+  PathPoint twoP;
+  PathPoint threeP;
+  PathPoint fourP;
   // The robot's subsystems and commands are defined here...
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
@@ -46,20 +55,25 @@ public class RobotContainer {
    */
   public RobotContainer() {
     field = new Field2d();
+    Chassis.CreateInstance();
+    chassis = Chassis.GetInstance();
+    chassis.setDefaultCommand(new Drive(chassis, new XboxController(0)));
+    SmartDashboard.putData(chassis);
     TrajectoryConfig config = new TrajectoryConfig(2, 2);
-    Pose2d one = new Pose2d(new Translation2d(0, 2), Rotation2d.fromDegrees(0));
-    Pose2d two = new Pose2d(new Translation2d(2, 2), Rotation2d.fromDegrees(0));
-    Pose2d three = new Pose2d(new Translation2d(2, 4), Rotation2d.fromDegrees(0));
+    Pose2d one = new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(0));
+    Pose2d two = new Pose2d(new Translation2d(2, 0), Rotation2d.fromDegrees(0));
+    Pose2d three = new Pose2d(new Translation2d(2, 2), Rotation2d.fromDegrees(0));
     Pose2d four = new Pose2d(new Translation2d(4, 4), Rotation2d.fromDegrees(0));
     Pose2d five = new Pose2d(new Translation2d(7, 6.5), Rotation2d.fromDegrees(0));
     Pose2d six = new Pose2d(new Translation2d(10,6.5), Rotation2d.fromDegrees(0));
     Pose2d seven = new Pose2d(new Translation2d(10, 0), Rotation2d.fromDegrees(0));
 
 
-    PathPoint oneP = new PathPoint(one, 1, 0);
-    PathPoint twoP = new PathPoint(two, 1, 1);
-    PathPoint threeP = new PathPoint(three, 1, 0.5);
-    PathPoint fourP = new PathPoint(four, 1, 0.8);
+
+     oneP = new PathPoint(one, new Translation2d(0,0), 0);
+     twoP = new PathPoint(two, new Translation2d(0,2), 1);
+     threeP = new PathPoint(three, new Translation2d(2,0), 0.5);
+     fourP = new PathPoint(four, 1, 0.8);
     PathPoint fiveP = new PathPoint(five, 1, 0.5);
     PathPoint sixP = new PathPoint(six, 1, 0.3);
     PathPoint sevenP = new PathPoint(seven, 1, 0);
@@ -104,9 +118,14 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
+    PathPoint[] arr = {oneP, twoP, threeP,fourP};
     return new InstantCommand(() -> {
       field.getObject("path").setTrajectory(traj);
       field.getObject("OG").setTrajectory(origin);
-    });
+    }).andThen(new FollowPath(pathgen.generatePathPointArray(), 2, 9, chassis, chassis::setVelocities, chassis::getPose,
+    ()->{return new Translation2d(
+      chassis.getVelocity().getNorm()*10/ChassisConstants.SwerveModuleConstants.PULSE_PER_DEGREE,
+      chassis.getVelocity().getAngle().getDegrees()
+    );}));
   }
 }

@@ -3,7 +3,12 @@
     "types": {
       "/FMSInfo": "FMSInfo",
       "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
-      "/SmartDashboard/Field": "Field2d"
+      "/SmartDashboard/Calibrate Offsets": "Command",
+      "/SmartDashboard/Field": "Field2d",
+      "/SmartDashboard/Trajectory": "Field2d",
+      "/SmartDashboard/Zero Angle": "Command",
+      "/SmartDashboard/setBreak": "Command",
+      "/SmartDashboard/setCoast": "Command"
     },
     "windows": {
       "/SmartDashboard/Field": {
@@ -36,6 +41,20 @@
   "NetworkTables": {
     "Persistent Values": {
       "open": false
+    },
+    "transitory": {
+      "SmartDashboard": {
+        "Chassis": {
+          "open": true
+        },
+        "Field": {
+          "open": true
+        },
+        "Front Left Module": {
+          "open": true
+        },
+        "open": true
+      }
     }
   }
 }
