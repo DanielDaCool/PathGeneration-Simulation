@@ -111,6 +111,7 @@ public class PathGenerator {
                 double increment = calculateIncrement(velocityAtPathPoint,radius);
                 // generate the list of points
                 ArrayList<PathPoint> points = new ArrayList<PathPoint>();
+                double holonomicRotation = pathPoint.getRotation().minus(previousPathPoint.getRotation()).getDegrees();
                 for (int i = 0; i < Math.abs(angleByArgPoints); i += increment) {
                         boolean isCircle = false;
                         Translation2d rotated = circle.plus(new Translation2d(radius, first.getAngle())
@@ -128,7 +129,7 @@ public class PathGenerator {
                                 velocity = new Translation2d(velocityAtPathPoint
                                         , nextPathPoints.getTranslation().minus(rotated).getAngle());
                                 }
-                        points.add(new PathPoint(new Pose2d(rotated, velocity.getAngle()), velocity, 0, isCircle));
+                        points.add(new PathPoint(new Pose2d(rotated, previousPathPoint.getRotation().plus(Rotation2d.fromDegrees(holonomicRotation * (Math.abs(i)/angleByArgPoints)))), velocity, 0, isCircle));
                 }
 
                 return points;

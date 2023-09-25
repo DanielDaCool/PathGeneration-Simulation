@@ -27,13 +27,14 @@ public class FollowSection extends CommandBase {
   Consumer<ChassisSpeeds> setSpeeds;
   Supplier<Pose2d> getPose;
   Supplier<Translation2d> getVelocity;
-  PIDController pid;
+  PIDController posPid;
+  PIDController rotPid;
   double[] line;
 
   public FollowSection(PathPoint first, PathPoint second, double maxSpeed, double maxAcceleration,
       Subsystem subsystem, Consumer<ChassisSpeeds> setSpeeds, Supplier<Pose2d> getPose,
       Supplier<Translation2d> getVelocity,
-      double kp, double ki, double kd) {
+      double kp, double ki, double kd, double rotKp, double rotKi, double rotKd) {
     this.first = first;
     this.second = second;
 
@@ -43,7 +44,8 @@ public class FollowSection extends CommandBase {
     this.setSpeeds = setSpeeds;
     this.getPose = getPose;
     this.getVelocity = getVelocity;
-    pid = new PIDController(kp, ki, kd);
+    posPid = new PIDController(kp, ki, kd);
+    rotPid = new PIDController(rotKp, rotKi, rotKd);
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(subsystem);
   }
@@ -76,8 +78,7 @@ public class FollowSection extends CommandBase {
     Translation2d vec = second.pose.getTranslation().minus(first.pose.getTranslation());
     double error = -pose.minus(first.pose.getTranslation())
       .rotateBy(new Rotation2d(vec.getX(),-vec.getY())).getY();
-    double correctionSize = Math.abs(pid.calculate(error));
-    //System.out.println("ERROR:" + error + "CORRECTION: " + correctionSize);
+    double correctionSize = Math.abs(posPid.calculate(error));
     Translation2d spvelTranslation;
     if (!first.isCircle || !second.isCircle) {
       double spvel = trapezoid.calculate();
@@ -87,9 +88,20 @@ public class FollowSection extends CommandBase {
     }
     Translation2d correction = new Translation2d(correctionSize,
     first.velociotyTranslation.rotateBy(Rotation2d.fromDegrees(90 * Math.signum(error))).getAngle());
-    System.out.println("ANGLE OF CORRECTION: " + 90 * Math.signum(error) + "ERROR: " + error);
     Translation2d res = spvelTranslation.plus(correction);
-    setSpeeds.accept(new ChassisSpeeds(res.getX(), res.getY(), 0));
+    double rotTarget = normalaizeAngle(getPose.get().getRotation().getDegrees(), second.pose.getRotation().getDegrees());
+    rotPid.setSetpoint(rotTarget);
+    double angularVelocity = -rotPid.calculate(getPose.get().getRotation().getDegrees());
+
+    System.out.println("T: " + rotTarget + " PPROT: " + second.pose.getRotation().getDegrees() + " VEL: " +  angularVelocity);
+    setSpeeds.accept(new ChassisSpeeds(res.getX(), res.getY(), Math.toRadians(-angularVelocity)));
+  }
+
+  private double normalaizeAngle(double currentAngle, double spAngle){
+    double res = spAngle;
+    if(Math.abs(spAngle) - Math.abs(currentAngle) > 180)
+      res = res - 360;
+    return res;
   }
 
   // Called once the command ends or is interrupted.
