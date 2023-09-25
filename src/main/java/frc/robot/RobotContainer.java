@@ -63,25 +63,33 @@ public class RobotContainer {
     Pose2d one = new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(0));
     Pose2d two = new Pose2d(new Translation2d(2, 0), Rotation2d.fromDegrees(0));
     Pose2d three = new Pose2d(new Translation2d(2, 2), Rotation2d.fromDegrees(0));
-    Pose2d four = new Pose2d(new Translation2d(4, 4), Rotation2d.fromDegrees(0));
+    Pose2d four = new Pose2d(new Translation2d(5, 3), Rotation2d.fromDegrees(0));
     Pose2d five = new Pose2d(new Translation2d(7, 6.5), Rotation2d.fromDegrees(0));
-    Pose2d six = new Pose2d(new Translation2d(10,6.5), Rotation2d.fromDegrees(0));
-    Pose2d seven = new Pose2d(new Translation2d(10, 0), Rotation2d.fromDegrees(0));
+    Pose2d six = new Pose2d(new Translation2d(13,6.8), Rotation2d.fromDegrees(0));
+    Pose2d seven = new Pose2d(new Translation2d(9.4, 8), Rotation2d.fromDegrees(0));
+    Pose2d eight = new Pose2d(new Translation2d(0, 8), Rotation2d.fromDegrees(0));
+    Pose2d nine = new Pose2d(new Translation2d(1, 2), Rotation2d.fromDegrees(0));
+
+
+    
 
 
 
      oneP = new PathPoint(one, new Translation2d(0,0), 0);
-     twoP = new PathPoint(two, new Translation2d(0,2), 1);
-     threeP = new PathPoint(three, new Translation2d(2,0), 0.5);
-     fourP = new PathPoint(four, 1, 0.8);
-    PathPoint fiveP = new PathPoint(five, 1, 0.5);
-    PathPoint sixP = new PathPoint(six, 1, 0.3);
-    PathPoint sevenP = new PathPoint(seven, 1, 0);
+     twoP = new PathPoint(two, 3, 1);
+     threeP = new PathPoint(three,  3, 1);
+     fourP = new PathPoint(four, 3, 0.5);
+    PathPoint fiveP = new PathPoint(five, 3, 0.5);
+    PathPoint sixP = new PathPoint(six, 3, 0.5);
+    PathPoint sevenP = new PathPoint(seven, 3, 0.5);
+    PathPoint eightP = new PathPoint(eight, 3, 0.3);
+    PathPoint nineP = new PathPoint(nine, new Translation2d(0,0), 0);
+
 
 
     SmartDashboard.putData(field);
 
-    pathgen = new PathGenerator(config, oneP, twoP, threeP, fourP, fiveP, sixP, sevenP);
+    pathgen = new PathGenerator(config, oneP, twoP, threeP, fourP, fiveP, sixP, sevenP,eightP,nineP);
     traj = pathgen.generateTrajectory();
     origin = pathgen.getOriginalPoints();
     // Configure the trigger bindings
@@ -118,14 +126,10 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    PathPoint[] arr = {oneP, twoP, threeP,fourP};
     return new InstantCommand(() -> {
       field.getObject("path").setTrajectory(traj);
       field.getObject("OG").setTrajectory(origin);
-    }).andThen(new FollowPath(pathgen.generatePathPointArray(), 2, 9, chassis, chassis::setVelocities, chassis::getPose,
-    ()->{return new Translation2d(
-      chassis.getVelocity().getNorm()*10/ChassisConstants.SwerveModuleConstants.PULSE_PER_DEGREE,
-      chassis.getVelocity().getAngle().getDegrees()
-    );}));
+    }).andThen(new FollowPath(pathgen.generatePathPointArray(), 8, 12/50., chassis, chassis::setVelocities, chassis::getPose,
+    chassis::getVelocity));
   }
 }

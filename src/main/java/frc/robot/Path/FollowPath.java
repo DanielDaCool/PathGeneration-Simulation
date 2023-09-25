@@ -45,17 +45,13 @@ public class FollowPath extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if(!followSection.isFinished()){
-      followSection.schedule();
-    }else{
+    if(followSection.isFinished())
       updateSection();
-    }
   }
-
   private void updateSection(){
     if(currentSection < pathPoints.length-1){
     followSection = new FollowSection(pathPoints[currentSection], pathPoints[currentSection + 1],
-     maxSpeed, maxAcceleration, subsystem, setSpeeds, getPose, getVelocity);
+     maxSpeed, maxAcceleration, subsystem, setSpeeds, getPose, getVelocity, 5, 1, 0);
     followSection.schedule();
      currentSection++;
     }

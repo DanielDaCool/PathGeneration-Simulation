@@ -7,6 +7,7 @@ package frc.robot.Path;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -23,20 +24,26 @@ public class FollowSection extends CommandBase {
   Subsystem subsystem;
   double maxSpeed;
   double maxAcceleration;
-  Consumer<ChassisSpeeds> setSpeeds; 
+  Consumer<ChassisSpeeds> setSpeeds;
   Supplier<Pose2d> getPose;
   Supplier<Translation2d> getVelocity;
-  public FollowSection(PathPoint first, PathPoint second, double maxSpeed, double maxAcceleration, 
-    Subsystem subsystem, Consumer<ChassisSpeeds> setSpeeds, Supplier<Pose2d> getPose, Supplier<Translation2d> getVelocity) {
+  PIDController pid;
+  double[] line;
+
+  public FollowSection(PathPoint first, PathPoint second, double maxSpeed, double maxAcceleration,
+      Subsystem subsystem, Consumer<ChassisSpeeds> setSpeeds, Supplier<Pose2d> getPose,
+      Supplier<Translation2d> getVelocity,
+      double kp, double ki, double kd) {
     this.first = first;
     this.second = second;
-    
+
     this.subsystem = subsystem;
     this.maxSpeed = maxSpeed;
     this.maxAcceleration = maxAcceleration;
     this.setSpeeds = setSpeeds;
     this.getPose = getPose;
     this.getVelocity = getVelocity;
+    pid = new PIDController(kp, ki, kd);
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(subsystem);
   }
@@ -44,25 +51,52 @@ public class FollowSection extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    trapezoid = new TrapezoidMotion(second.pose.getTranslation().minus(first.pose.getTranslation()).getNorm(), 
-      second.velocitySize, maxSpeed, maxAcceleration, 
-      ()->{return getPose.get().getTranslation().minus(first.pose.getTranslation()).rotateBy(
-        Rotation2d.fromDegrees(-first.velociotyTranslation.getAngle().getDegrees())).getNorm();}
-      , ()->{return getVelocity.get().getNorm();});
+    Translation2d firstTranslation = first.pose.getTranslation();
+    Translation2d secondTranslation = second.pose.getTranslation();
+    double[] tempLine = {
+        secondTranslation.getY() - firstTranslation.getY(),
+        firstTranslation.getX() - secondTranslation.getX(),
+        secondTranslation.getX() * firstTranslation.getY() - firstTranslation.getX() * secondTranslation.getY()
+    };
+    line = tempLine;
+    trapezoid = new TrapezoidMotion(second.pose.getTranslation().minus(first.pose.getTranslation()).getNorm(),
+        second.velocitySize, maxSpeed, maxAcceleration,
+        () -> {
+          return getPose.get().getTranslation().minus(first.pose.getTranslation()).rotateBy(
+              Rotation2d.fromDegrees(-first.velociotyTranslation.getAngle().getDegrees())).getNorm();
+        }, () -> {
+          return getVelocity.get().getNorm();
+        });
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double spvel = trapezoid.calculate();
-    Translation2d spvelTranslation = new Translation2d(spvel, first.velociotyTranslation.getAngle().getDegrees());
-    setSpeeds.accept(new ChassisSpeeds(spvelTranslation.getX(), spvelTranslation.getY(), 0));
-    System.out.println("SPVE" + spvel);
+    Translation2d pose = getPose.get().getTranslation();
+    Translation2d vec = second.pose.getTranslation().minus(first.pose.getTranslation());
+    double error = -pose.minus(first.pose.getTranslation())
+      .rotateBy(new Rotation2d(vec.getX(),-vec.getY())).getY();
+    double correctionSize = Math.abs(pid.calculate(error));
+    //System.out.println("ERROR:" + error + "CORRECTION: " + correctionSize);
+    Translation2d spvelTranslation;
+    if (!first.isCircle || !second.isCircle) {
+      double spvel = trapezoid.calculate();
+      spvelTranslation = new Translation2d(spvel, first.velociotyTranslation.getAngle());
+    } else {
+      spvelTranslation = first.velociotyTranslation;
+    }
+    Translation2d correction = new Translation2d(correctionSize,
+    first.velociotyTranslation.rotateBy(Rotation2d.fromDegrees(90 * Math.signum(error))).getAngle());
+    System.out.println("ANGLE OF CORRECTION: " + 90 * Math.signum(error) + "ERROR: " + error);
+    Translation2d res = spvelTranslation.plus(correction);
+    setSpeeds.accept(new ChassisSpeeds(res.getX(), res.getY(), 0));
   }
 
   // Called once the command ends or is interrupted.
+
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+  }
 
   // Returns true when the command should end.
   @Override

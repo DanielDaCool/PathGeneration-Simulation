@@ -36,7 +36,7 @@ public class SimulateMotor extends SubsystemBase {
   }
 
   public double getSelectedSensorVelocity(){
-    return speed * ChassisConstants.SwerveModuleConstants.PULSE_PER_METER;
+    return speed * ChassisConstants.SwerveModuleConstants.PULSE_PER_METER / 10;
   }
 
   @Override
