@@ -51,7 +51,7 @@ public class FollowPath extends CommandBase {
   private void updateSection(){
     if(currentSection < pathPoints.length-1){
     followSection = new FollowSection(pathPoints[currentSection], pathPoints[currentSection + 1],
-     maxSpeed, maxAcceleration, subsystem, setSpeeds, getPose, getVelocity, 5, 1, 0 , 1 , 0 , 0.0);
+     maxSpeed, maxAcceleration, subsystem, setSpeeds, getPose, getVelocity, 2, 1, 0 , 1 , 0 , 0.0);
     followSection.schedule();
      currentSection++;
     }

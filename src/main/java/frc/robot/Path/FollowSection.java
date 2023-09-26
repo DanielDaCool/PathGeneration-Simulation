@@ -93,7 +93,7 @@ public class FollowSection extends CommandBase {
     rotPid.setSetpoint(rotTarget);
     double angularVelocity = -rotPid.calculate(getPose.get().getRotation().getDegrees());
 
-    System.out.println("T: " + rotTarget + " PPROT: " + second.pose.getRotation().getDegrees() + " VEL: " +  angularVelocity);
+    //System.out.println("T: " + rotTarget + " PPROT: " + second.pose.getRotation().getDegrees() + " VEL: " +  angularVelocity);
     setSpeeds.accept(new ChassisSpeeds(res.getX(), res.getY(), Math.toRadians(-angularVelocity)));
   }
 
