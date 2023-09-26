@@ -193,7 +193,7 @@ public class PathGenerator {
 
         private double calculateIncrement(double velocityAtPoint, double radius) {
                 double d = velocityAtPoint / Constants.CYCLES_PER_SECOND;
-                return Math.toDegrees(Math.acos(((d * d) - 2 * radius * radius) / (-2 * radius * radius)));
+                return Math.max(Math.toDegrees(Math.acos(((d * d) - 2 * radius * radius) / (-2 * radius * radius))), 5);
         }
 
         private Translation2d tangionPointOfLine(double[] line, Translation2d circle) {

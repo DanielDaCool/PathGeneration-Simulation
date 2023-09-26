@@ -72,12 +72,12 @@ public class RobotContainer {
 
      oneP = new PathPoint(one, 3, 0);
      twoP = new PathPoint(two, 3, 1);
-     threeP = new PathPoint(three,  3, 1);
+     threeP = new PathPoint(three,  0.2, 1);
      fourP = new PathPoint(four, 3, 0.5);
-    PathPoint fiveP = new PathPoint(five, 3, 0.5);
+    PathPoint fiveP = new PathPoint(five, 0.6, 0.5);
     PathPoint sixP = new PathPoint(six, 3, 0.5);
     PathPoint sevenP = new PathPoint(seven, 3, 0.5);
-    PathPoint eightP = new PathPoint(eight, 3, 0.3);
+    PathPoint eightP = new PathPoint(eight, 1, 0.3);
     PathPoint nineP = new PathPoint(nine, 0, 0);
 
 
