@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.plaf.basic.BasicBorders.RadioButtonBorder;
+
 import com.pathplanner.lib.PathPlannerTrajectory.Waypoint;
 
 import edu.wpi.first.math.Pair;
@@ -45,8 +47,7 @@ public class PathGenerator {
                 pathpoints = new ArrayList<PathPoint>();
                 pathpoints.add(states[0]);
                 for (int i = 1; i < states.length - 1; i++) {
-                        ArrayList<PathPoint> tempArr = transform(states[i - 1].pose,
-                                        states[i].pose, states[i + 1].pose, states[i].radius, states[i].velocitySize);
+                        ArrayList<PathPoint> tempArr = transform(states[i - 1], states[i], states[i + 1]);
 
                         PathPoint[] arr = tempArr.toArray(new PathPoint[tempArr.size()]);
                         for (int j = 0; j < arr.length; j++) {
@@ -65,8 +66,7 @@ public class PathGenerator {
                 System.out.println(PPArr[0].velociotyTranslation.toString());
                 index++;
                 for (int i = 1; i < states.length - 1; i++) {
-                        ArrayList<PathPoint> tempArr = transform(states[i - 1].pose,
-                                        states[i].pose, states[i + 1].pose, states[i].radius, states[i].velocitySize);
+                        ArrayList<PathPoint> tempArr = transform(states[i - 1], states[i], states[i + 1]);
 
                         PathPoint[] arr = tempArr.toArray(new PathPoint[tempArr.size()]);
                         for (int j = 0; j < arr.length; j++) {
@@ -79,9 +79,14 @@ public class PathGenerator {
                 return PPArr;
         }
 
-        private ArrayList<PathPoint> transform(Pose2d previousPathPoint, Pose2d pathPoint, Pose2d nextPathPoints,
-                        double radius,
-                        double velocityAtPathPoint) {
+        private ArrayList<PathPoint> transform(PathPoint prev, PathPoint cur, PathPoint next) {
+                
+                Pose2d previousPathPoint = prev.pose;
+                Pose2d pathPoint = cur.pose;
+                Pose2d nextPathPoints = next.pose;
+                double radius = cur.radius > maxRadius(prev, cur, next) ? maxRadius(prev, cur, next) : cur.radius;
+                cur.radius = radius;
+                double velocityAtPathPoint = cur.velocitySize;
 
                 Translation2d circle = calcCircleCenter(previousPathPoint, pathPoint, nextPathPoints, radius);
                 // finding the line equasions, line - AX + BY + C -> [A,B,C]
@@ -156,6 +161,7 @@ public class PathGenerator {
                 }
         }
 
+        //the calculatios for the first points on the path:
         private PathPoint calcFirstPoint(Pose2d first, Pose2d second, double velocityAtPoint){
                         Translation2d velocityTranslation2d = new Translation2d(velocityAtPoint,
                                         second.getTranslation().minus(first.getTranslation()).getAngle());
@@ -204,6 +210,17 @@ public class PathGenerator {
                                 / (a * a + b * b);
                 Translation2d res = new Translation2d(x, y);
                 return res;
+        }
+
+        private double maxRadius(PathPoint prev, PathPoint cur, PathPoint next){
+                double prevToCurDistance = Math.abs(cur.pose.getTranslation().minus(prev.pose.getTranslation()).getNorm());
+                double curToNextDistance = Math.abs(next.pose.getTranslation().minus(cur.pose.getTranslation()).getNorm());
+                double maxRadius = Math.abs(prevToCurDistance) - prev.radius;
+                if(maxRadius > curToNextDistance){
+                        maxRadius = curToNextDistance;
+                }
+                System.out.println("PREVTCUR: " + prevToCurDistance + " CURTNECT: " + curToNextDistance + " MAX: " + maxRadius);
+                return maxRadius;
         }
 
 }

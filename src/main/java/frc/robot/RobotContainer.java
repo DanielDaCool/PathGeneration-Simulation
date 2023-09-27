@@ -61,23 +61,23 @@ public class RobotContainer {
     SmartDashboard.putData(chassis);
     TrajectoryConfig config = new TrajectoryConfig(2, 2);
     Pose2d one = new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(0));
-    Pose2d two = new Pose2d(new Translation2d(0, 2), Rotation2d.fromDegrees(180));
-    Pose2d three = new Pose2d(new Translation2d(0, 4), Rotation2d.fromDegrees(180));
-    Pose2d four = new Pose2d(new Translation2d(5, 3), Rotation2d.fromDegrees(90));
+    Pose2d two = new Pose2d(new Translation2d(2, 0), Rotation2d.fromDegrees(180));
+    Pose2d three = new Pose2d(new Translation2d(2, 2), Rotation2d.fromDegrees(180));
+    Pose2d four = new Pose2d(new Translation2d(4, 3), Rotation2d.fromDegrees(90));
     Pose2d five = new Pose2d(new Translation2d(7, 6.5), Rotation2d.fromDegrees(0));
-    Pose2d six = new Pose2d(new Translation2d(13,6.8), Rotation2d.fromDegrees(-90));
+    Pose2d six = new Pose2d(new Translation2d(10,6.8), Rotation2d.fromDegrees(-90));
     Pose2d seven = new Pose2d(new Translation2d(9.4, 8), Rotation2d.fromDegrees(0));
     Pose2d eight = new Pose2d(new Translation2d(0, 8), Rotation2d.fromDegrees(-67));
     Pose2d nine = new Pose2d(new Translation2d(1, 2), Rotation2d.fromDegrees(0));
 
      oneP = new PathPoint(one, 3, 0);
-     twoP = new PathPoint(two, 3, 1);
-     threeP = new PathPoint(three,  0.2, 1);
-     fourP = new PathPoint(four, 3, 0.5);
-    PathPoint fiveP = new PathPoint(five, 0.6, 0.5);
-    PathPoint sixP = new PathPoint(six, 3, 0.5);
+     twoP = new PathPoint(two, 3, 0.5);
+     threeP = new PathPoint(three,  1, 190);
+     fourP = new PathPoint(four, 1, 0.5);
+    PathPoint fiveP = new PathPoint(five, 1, 0.5);
+    PathPoint sixP = new PathPoint(six, 3, 0.35);
     PathPoint sevenP = new PathPoint(seven, 3, 0.5);
-    PathPoint eightP = new PathPoint(eight, 1, 0.3);
+    PathPoint eightP = new PathPoint(eight, 1, 11241421);
     PathPoint nineP = new PathPoint(nine, 0, 0);
 
 
@@ -124,7 +124,7 @@ public class RobotContainer {
     return new InstantCommand(() -> {
       field.getObject("path").setTrajectory(traj);
       field.getObject("OG").setTrajectory(origin);
-    }).andThen(new FollowPath(pathgen.generatePathPointArray(), 3, 20/50., chassis, chassis::setVelocities, chassis::getPose,
+    }).andThen(new FollowPath(pathgen.generatePathPointArray(), 2, 12/50., chassis, chassis::setVelocities, chassis::getPose,
     chassis::getVelocity));
   }
 }
