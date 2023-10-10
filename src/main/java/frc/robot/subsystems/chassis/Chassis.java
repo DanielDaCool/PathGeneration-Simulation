@@ -51,7 +51,7 @@ import frc.robot.utilities.VisionUtils;
 public class Chassis extends SubsystemBase {
     private final Field2d pathDisplay;
 
-    private final Field2d field;
+    public final Field2d field;
     private final SwerveModule[] modules;
     private final Gyro gyro;
     private final SwerveDrivePoseEstimator poseEstimator;

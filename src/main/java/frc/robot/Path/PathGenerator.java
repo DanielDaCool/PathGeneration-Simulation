@@ -4,6 +4,7 @@
 
 package frc.robot.Path;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,13 +13,11 @@ import javax.swing.plaf.basic.BasicBorders.RadioButtonBorder;
 
 import com.pathplanner.lib.PathPlannerTrajectory.Waypoint;
 
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.Trajectory.State;
 import frc.robot.Constants;
 
@@ -79,16 +78,19 @@ public class PathGenerator {
                 return PPArr;
         }
 
-        private ArrayList<PathPoint> transform(PathPoint prev, PathPoint cur, PathPoint next) {
+                private ArrayList<PathPoint> transform(PathPoint prev, PathPoint cur, PathPoint next) {
                 
                 Pose2d previousPathPoint = prev.pose;
                 Pose2d pathPoint = cur.pose;
-                Pose2d nextPathPoints = next.pose;
-                double radius = cur.radius > maxRadius(prev, cur, next) ? maxRadius(prev, cur, next) : cur.radius;
+                Pose2d nextPathPoint = next.pose;
+                double angleBetweenPoints = 180 - Math.abs(pathPoint.getTranslation().minus(previousPathPoint.getTranslation()).getAngle()
+                .minus(nextPathPoint.getTranslation().minus(pathPoint.getTranslation()).getAngle()) .getDegrees());
+                double radius = cur.radius!= 0 ? cur.radius > maxRadius(prev, cur, next,angleBetweenPoints) ?
+                 maxRadius(prev, cur, next, angleBetweenPoints) : cur.radius : 0;
                 cur.radius = radius;
                 double velocityAtPathPoint = cur.velocitySize;
 
-                Translation2d circle = calcCircleCenter(previousPathPoint, pathPoint, nextPathPoints, radius);
+                Translation2d circle = calcCircleCenter(previousPathPoint, pathPoint, nextPathPoint, radius);
                 // finding the line equasions, line - AX + BY + C -> [A,B,C]
                 double[] firstLine = {
                                 pathPoint.getY() - previousPathPoint.getY(),
@@ -97,39 +99,59 @@ public class PathGenerator {
                                                 - previousPathPoint.getX() * pathPoint.getY()
                 };
                 double[] secondLine = {
-                                pathPoint.getY() - nextPathPoints.getY(),
-                                nextPathPoints.getX() - pathPoint.getX(),
-                                pathPoint.getX() * nextPathPoints.getY() - nextPathPoints.getX() * pathPoint.getY()
+                                pathPoint.getY() - nextPathPoint.getY(),
+                                nextPathPoint.getX() - pathPoint.getX(),
+                                pathPoint.getX() * nextPathPoint.getY() - nextPathPoint.getX() * pathPoint.getY()
                 };
 
-                if (circle != null) {
+                if (circle != null && radius != 0) {
 
                         /// find tangent points
                         Translation2d firstTangent = tangionPointOfLine(firstLine, circle);
                         Translation2d seconTangent = tangionPointOfLine(secondLine, circle);
 
                         // calculate the angle between tangent points on circle
-                        Translation2d first = firstTangent.minus(circle);
-                        Translation2d second = seconTangent.minus(circle);
-                        double angleByArgPoints = second.getAngle().minus(first.getAngle()).getDegrees();
+                        Translation2d firstTanToCircle = firstTangent.minus(circle);
+                        Translation2d secondTanToCircle = seconTangent.minus(circle);
+                        double angleByArgPoints = secondTanToCircle.getAngle().minus(firstTanToCircle.getAngle()).getDegrees();
 
                         double increment = calculateIncrement(velocityAtPathPoint, radius);
+
                         // generate the list of points
+                        return generateTransformedPoints(previousPathPoint, pathPoint, nextPathPoint,
+                         circle, radius, increment, angleByArgPoints, firstTanToCircle,
+                          velocityAtPathPoint);
+                        
+                } else {
                         ArrayList<PathPoint> points = new ArrayList<PathPoint>();
-                        double holonomicRotation = pathPoint.getRotation().minus(previousPathPoint.getRotation())
-                                        .getDegrees();
-                        for (int i = 0; i < Math.abs(angleByArgPoints); i += increment) {
+                        Translation2d velocityTranslation2d = new Translation2d(velocityAtPathPoint,
+                                        nextPathPoint.getTranslation().minus(pathPoint.getTranslation()).getAngle());
+                        points.add(new PathPoint(pathPoint, velocityTranslation2d, 0, false));
+                        System.out.println("NOT CIRCLE!!!");
+                        System.out.println(points.get(0).pose.toString() + " VEL: " + points.get(0).velociotyTranslation.toString());
+                        return points;
+                }
+
+        }
+
+
+        private ArrayList<PathPoint> generateTransformedPoints(Pose2d previousPathPoint, Pose2d pathPoint,
+                Pose2d nextPathPoint, Translation2d circle, double radius, double increment, double angleByArgPoints,
+                Translation2d firstTanToCircle, double velocityAtPathPoint){
+                ArrayList<PathPoint> points = new ArrayList<PathPoint>();
+                        double holonomicRotationAmount = pathPoint.getRotation().minus(previousPathPoint.getRotation()).getDegrees();
+                        for (double i = 0; i < Math.abs(angleByArgPoints); i = (i + increment) < Math.abs(angleByArgPoints)? i + increment : Math.abs(angleByArgPoints)) {
                                 boolean isCircle = false;
-                                Translation2d rotated = circle.plus(new Translation2d(radius, first.getAngle())
+                                Translation2d rotated = circle.plus(new Translation2d(radius, firstTanToCircle.getAngle())
                                                 .rotateBy(Rotation2d.fromDegrees(Math.signum(angleByArgPoints) * i)));
                                 Translation2d velocity;
                                 Translation2d firstToSecondPoint;
                                 if (i + increment < Math.abs(angleByArgPoints)) {
-                                        firstToSecondPoint = new Translation2d(radius, first.getAngle())
+                                        firstToSecondPoint = new Translation2d(radius, firstTanToCircle.getAngle())
                                                         .rotateBy(Rotation2d.fromDegrees(Math.signum(angleByArgPoints)
                                                                         * (i + Math.signum(angleByArgPoints)
                                                                                         * increment)))
-                                                        .minus(new Translation2d(radius, first.getAngle())
+                                                        .minus(new Translation2d(radius, firstTanToCircle.getAngle())
                                                                         .rotateBy(Rotation2d.fromDegrees(
                                                                                         Math.signum(angleByArgPoints)
                                                                                                         * i)))
@@ -140,25 +162,16 @@ public class PathGenerator {
                                         isCircle = true;
                                 } else {
                                         velocity = new Translation2d(velocityAtPathPoint,
-                                                        nextPathPoints.getTranslation().minus(rotated).getAngle());
+                                        nextPathPoint.getTranslation().minus(rotated).getAngle());
                                 }
                                 points.add(new PathPoint(
                                                 new Pose2d(rotated, previousPathPoint.getRotation()
-                                                                .plus(Rotation2d.fromDegrees(holonomicRotation
+                                                                .plus(Rotation2d.fromDegrees(holonomicRotationAmount
                                                                                 * (Math.abs(i) / angleByArgPoints)))),
                                                 velocity, 0, isCircle));
                         }
 
                         return points;
-                } else {
-                        ArrayList<PathPoint> points = new ArrayList<PathPoint>();
-                        Translation2d velocityTranslation2d = new Translation2d(velocityAtPathPoint,
-                                        nextPathPoints.getTranslation().minus(pathPoint.getTranslation()).getAngle());
-                        points.add(new PathPoint(pathPoint, velocityTranslation2d, 0, false));
-                        System.out.println("NOT CIRCLE!!!");
-                        System.out.println(points.get(0).pose.toString() + " VEL: " + points.get(0).velociotyTranslation.toString());
-                        return points;
-                }
         }
 
         //the calculatios for the first points on the path:
@@ -212,14 +225,12 @@ public class PathGenerator {
                 return res;
         }
 
-        private double maxRadius(PathPoint prev, PathPoint cur, PathPoint next){
-                double prevToCurDistance = Math.abs(cur.pose.getTranslation().minus(prev.pose.getTranslation()).getNorm());
+        private double maxRadius(PathPoint prev, PathPoint cur, PathPoint next, double angleOfPoints){
+                double prevToCurDistance = Math.abs(cur.pose.getTranslation().minus(prev.pose.getTranslation()).getNorm() - prev.radius);
                 double curToNextDistance = Math.abs(next.pose.getTranslation().minus(cur.pose.getTranslation()).getNorm());
-                double maxRadius = Math.abs(prevToCurDistance) - prev.radius;
-                if(maxRadius > curToNextDistance){
-                        maxRadius = curToNextDistance;
-                }
-                System.out.println("PREVTCUR: " + prevToCurDistance + " CURTNECT: " + curToNextDistance + " MAX: " + maxRadius);
+                double shortLine = Math.min(prevToCurDistance, curToNextDistance);
+                double maxRadius = Math.abs(Math.tan(Math.toRadians(angleOfPoints/2)) * shortLine);
+                System.out.println("PRV: " + prevToCurDistance + " NXT: " + curToNextDistance + " MIN: " + shortLine + " MAX: " + maxRadius + " PRvRad " + prev.radius + " ANGLE: " + angleOfPoints);
                 return maxRadius;
         }
 

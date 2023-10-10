@@ -40,6 +40,11 @@
         "window": {
           "visible": true
         }
+      },
+      "/SmartDashboard/Trajectory": {
+        "window": {
+          "visible": true
+        }
       }
     }
   },
@@ -58,5 +63,8 @@
         "open": true
       }
     }
+  },
+  "NetworkTables View": {
+    "visible": false
   }
 }
