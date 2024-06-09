@@ -7,7 +7,6 @@ package frc.robot;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import frc.robot.utilities.IntPair;
 import frc.robot.utilities.Rectangle;
 
 /**
@@ -58,70 +57,4 @@ public final class Constants {
     public static final double ODOMETRY_TRUST_VALUE = 0.7;
     public static final double LIMELIGHT_TRUST_VALUE = 0.3;
 
-    /**
-     * The Vision constants.
-     */
-    public static final class VisionConstants {
-        public static final NetworkTable LIMELIGHT_TABLE1 = NetworkTableInstance.getDefault().getTable("limelight-ii");
-        public static final NetworkTable LIMELIGHT3_TABLE = NetworkTableInstance.getDefault().getTable("limelight-iii");
-
-        public static final NetworkTableEntry HAS_TARGET_ENTRY = LIMELIGHT_TABLE1.getEntry("tv"); // double not boolean
-
-        /**
-         * An array of doubles with the following values:
-         * <p>
-         * [0] - meters from the corner of the blue alliance x axis
-         * <p>
-         * [1] - meters from the corner of the blue alliance y axis
-         * <p>
-         * [2] - meters from the the field carpet in the z axis
-         * <p>
-         * [3] - roll in degrees
-         * <p>
-         * [4] - pitch in degrees
-         * <p>
-         * [5] - yaw in degrees
-         */
-        public static final NetworkTableEntry ROBOT_POSE_ENTRY = LIMELIGHT_TABLE1.getEntry("botpose_wpiblue");
-
-        /**
-         * An array of doubles with the following values:
-         * <p>
-         * [0] - meters from the limelight to the april tag in the right direction
-         * <p>
-         * [1] - meters from the limelight to the april tag in the down direction
-         * <p>
-         * [2] - meters from the limelight to the april tag in the forward direction
-         * <p>
-         * [3] - pitch from the camera to the april tag in degrees
-         * <p>
-         * [4] - yaw from the camera to the april tag in degrees
-         * <p>
-         * [5] - roll from the camera to the april tag in degrees
-         */
-        public static final NetworkTableEntry CAMERA_TRANSLATION_ENTRY = LIMELIGHT_TABLE1
-                .getEntry("targetpose_cameraspace");
-
-        public static final double MAX_DISTANCE_FOR_LIMELIGHT = 3;
-
-        public static final double VISION_ANGLE_TOLERANCE = 5;
-
-        public static final double LIMELIGHT2_YAW = 22.5;
-
-        public static final double LIMELIGHT3_YAW = 32.2;
-
-        public static final double MAX_SIDES_RATIO = 1.2;
-
-        public static final double VISION_TX_LIMIT = 5;
-
-        public static final double VISION_TA_LIMIT = 0.5;
-    }
-
-    public static final class LedConstants {
-        public static final IntPair[] LED_STRIPS = {
-            new IntPair(1, 175)
-        };
-        public static final double MAX_ANGLE = 50;
-        public static final double EPSILON = 5;
-    }
 }

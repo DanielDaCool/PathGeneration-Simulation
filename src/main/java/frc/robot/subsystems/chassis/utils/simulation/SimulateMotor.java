@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems.chassis.utils.simulation;
 
-import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -14,35 +13,42 @@ public class SimulateMotor extends SubsystemBase {
   private double timeStamp = Timer.getFPGATimestamp();
   private double speed;
   private double encoder = 0;
+
   /** Creates a new SimulateMotor. */
-  public SimulateMotor() {}
+  public SimulateMotor() {
+  }
 
   @Override
   public void periodic() {
-    encoder += (speed*(Timer.getFPGATimestamp() - timeStamp)) * ChassisConstants.SwerveModuleConstants.PULSE_PER_METER;
+    encoder += (speed * (Timer.getFPGATimestamp() - timeStamp))
+        * ChassisConstants.SwerveModuleConstants.PULSE_PER_METER;
     timeStamp = Timer.getFPGATimestamp();
   }
 
-  public void setVelocity(double speed){
+  public void setVelocity(double speed) {
     this.speed = speed;
   }
 
-  public void setAngle(double angle){
+  public void setAngle(double angle) {
     encoder = angle;
   }
 
-  public double getSelectedSensorPosition(){
+  public double getSelectedSensorPosition() {
     return encoder;
   }
 
-  public double getSelectedSensorVelocity(){
+  public double getSelectedSensorVelocity() {
     return speed * ChassisConstants.SwerveModuleConstants.PULSE_PER_METER / 10;
   }
 
   @Override
   public void initSendable(SendableBuilder builder) {
-    builder.addDoubleProperty("SPD", ()->{return speed;}, null);
-    builder.addDoubleProperty("ENC", ()->{return encoder;}, null);
+    builder.addDoubleProperty("SPD", () -> {
+      return speed;
+    }, null);
+    builder.addDoubleProperty("ENC", () -> {
+      return encoder;
+    }, null);
   }
 
 }

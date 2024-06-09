@@ -14,7 +14,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import frc.robot.Constants;
 import frc.robot.subsystems.chassis.ChassisConstants;
 import frc.robot.subsystems.chassis.ChassisConstants.SwerveModuleConstants;
 import frc.robot.subsystems.chassis.utils.simulation.Gyro;
@@ -25,7 +24,6 @@ import frc.robot.utilities.UtilsGeneral;
  * A swerve module
  */
 public class SwerveModule implements Sendable {
-    private double angleOffset;
     private double desiredVelocity, desiredAngle;
     private final SimulateMotor moveMotor, angleMotor;
     private final Gyro absoluteEncoder;
@@ -36,7 +34,6 @@ public class SwerveModule implements Sendable {
      * @param constants The constants for the module
      */
     public SwerveModule(SwerveModuleConstants constants) {
-        angleOffset = constants.angleOffset;
         moveMotor = new SimulateMotor();
         angleMotor = new SimulateMotor();
         absoluteEncoder = new Gyro();
@@ -61,9 +58,11 @@ public class SwerveModule implements Sendable {
         // angleMotor.config_kI(0, SwerveModuleConstants.ANGLE_KI);
         // angleMotor.config_kD(0, SwerveModuleConstants.ANGLE_KD);
         // angleMotor.config_kF(0, SwerveModuleConstants.ANGLE_KF);
-        // angleMotor.configMaxIntegralAccumulator(0, SwerveModuleConstants.MAX_ACCUM_INTEGRAL);
+        // angleMotor.configMaxIntegralAccumulator(0,
+        // SwerveModuleConstants.MAX_ACCUM_INTEGRAL);
 
-        // SupplyCurrentLimitConfiguration currentLimit = new SupplyCurrentLimitConfiguration();
+        // SupplyCurrentLimitConfiguration currentLimit = new
+        // SupplyCurrentLimitConfiguration();
         // currentLimit.currentLimit = SwerveModuleConstants.MAX_CURRENT_ANGLE;
         // currentLimit.enable = true;
 
@@ -83,12 +82,11 @@ public class SwerveModule implements Sendable {
      * @return The angle of the module, between 0 and 360 degrees
      */
     public double getAngle() {
-        //return UtilsGeneral.normalizeDegrees(absoluteEncoder.getAbsolutePosition() - angleOffset);
-        return angleMotor.getSelectedSensorPosition()/ChassisConstants.SwerveModuleConstants.PULSE_PER_DEGREE;
+
+        return angleMotor.getSelectedSensorPosition() / ChassisConstants.SwerveModuleConstants.PULSE_PER_DEGREE;
     }
 
-    public void setPower(double power){
-       // moveMotor.set(ControlMode.PercentOutput, power);
+    public void setPower(double power) {
     }
 
     /**
@@ -116,8 +114,6 @@ public class SwerveModule implements Sendable {
      */
     public void setVelocity(double velocity) {
         desiredVelocity = velocity;
-        // moveMotor.set(ControlMode.Velocity, velocity * SwerveModuleConstants.PULSE_PER_METER / 10,
-        //         DemandType.ArbitraryFeedForward, SwerveModuleConstants.VELOCITY_FF.calculate(velocity));
         moveMotor.setVelocity(velocity);
     }
 
@@ -139,7 +135,6 @@ public class SwerveModule implements Sendable {
      */
     public void setAngle(double angle) {
         desiredAngle = angle;
-        // angleMotor.set(ControlMode.Position, calculateTarget(angle));
         angleMotor.setAngle(calculateTarget(angle));
     }
 
@@ -147,7 +142,7 @@ public class SwerveModule implements Sendable {
      * Stops the angle motor
      */
     public void stopAngleMotor() {
-        //angleMotor.set(ControlMode.PercentOutput, 0);
+        // angleMotor.set(ControlMode.PercentOutput, 0);
         angleMotor.setVelocity(0);
     }
 
@@ -155,7 +150,7 @@ public class SwerveModule implements Sendable {
      * Stops the move motor
      */
     public void stopMoveMotor() {
-        //moveMotor.set(ControlMode.PercentOutput, 0);
+        // moveMotor.set(ControlMode.PercentOutput, 0);
         moveMotor.setVelocity(0);
     }
 
@@ -192,7 +187,7 @@ public class SwerveModule implements Sendable {
      * @param power The power to set the velocity motor to
      */
     public void setVelocityPower(double power) {
-        //moveMotor.set(ControlMode.PercentOutput, power);
+        // moveMotor.set(ControlMode.PercentOutput, power);
     }
 
     /**
@@ -209,7 +204,6 @@ public class SwerveModule implements Sendable {
      * Sets the offset of the module to the current angle
      */
     public void calibrateOffset() {
-        //angleOffset = absoluteEncoder.getAbsolutePosition();
     }
 
     /**
@@ -234,11 +228,9 @@ public class SwerveModule implements Sendable {
     public void initSendable(SendableBuilder builder) {
         UtilsGeneral.addDoubleProperty(builder, "Angle", this::getAngle, 2);
         builder.addDoubleProperty("Velocity", this::getVelocity, null);
-        builder.addDoubleProperty("Angle Offset", () -> angleOffset, null);
 
         builder.addDoubleProperty("Desired Velocity", () -> desiredVelocity, null);
         builder.addDoubleProperty("Desired Angle", () -> desiredAngle, null);
     }
 
-    
 }

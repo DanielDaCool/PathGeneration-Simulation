@@ -4,7 +4,6 @@
 
 package frc.robot.commands;
 
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -16,28 +15,28 @@ import frc.robot.Path.PathPoint;
 
 import frc.robot.subsystems.chassis.Chassis;
 
-public class GoToLoadingStation{
+public class GoToLoadingStation {
   /** Creates a new GoToLoadingStation. */
-  
-  
-  static private PathPoint end = new PathPoint(new Pose2d(15, 8, Rotation2d.fromDegrees(0)),
-    new Translation2d(0,0) , 0);
-  static private PathPoint before = new PathPoint(new Pose2d(14, 8, Rotation2d.fromDegrees(0)),
-    1.5 , 0.5);
+
+  static private PathPoint end = new PathPoint(new Pose2d(15, 8, Rotation2d.fromDegrees(180)),
+      new Translation2d(0, 0), 0);
+  static private PathPoint before = new PathPoint(new Pose2d(14, 8, Rotation2d.fromDegrees(180)),
+      1.5, 0.5);
+
   public GoToLoadingStation() {
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
   static public Command go(Chassis chassis) {
     PathGenerator pathGen;
+    TrajectoryConfig config = new TrajectoryConfig(4, 10);
     PathPoint current = new PathPoint(chassis.getPose(), 4, 0.3);
-    pathGen = new PathGenerator(new TrajectoryConfig(4, 10)
-    , current, before, end);
+    pathGen = new PathGenerator(config, current, before, end);
     FollowPath follow = new FollowPath(pathGen.generatePathPointArray(),
-    12, 10/50., chassis, chassis::setVelocities, chassis::getPose,
-     chassis::getVelocity);
-     chassis.field.getObject("path").setTrajectory(pathGen.generateTrajectory());
-     return follow;
+        config, chassis, chassis::setVelocities, chassis::getPose,
+        chassis::getVelocity, chassis::getAngularVelocity);
+    chassis.field.getObject("path").setTrajectory(pathGen.generateTrajectory());
+    return follow;
   }
 
 }

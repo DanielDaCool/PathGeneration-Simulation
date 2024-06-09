@@ -29,12 +29,12 @@ public class ChassisConstants {
         public static final double ANGLE_KD = 5;
         public static final double MAX_ACCUM_INTEGRAL = 80000;
         public static final double MAX_CURRENT_ANGLE = 20;
-        
+
         public static final double ANGLE_KF = 0;
         public static final double MAX_VELOCITY_ANGLE = 20000;
         public static final double MAX_ACCELERATION_ANGLE = 15000;
         public static final int S_CURVE_STRENGTH_ANGLE = 1;
-  
+
         public static final double PPR_FALCON = 2048;
         public static final double WHEEL_PERIMITER = 0.1016 * Math.PI; // meters
         public static final double GEAR_RATIO_VEL = 8.14;
@@ -67,7 +67,8 @@ public class ChassisConstants {
     public static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(
             new Translation2d(0.26515, 0.2215), // front left
             new Translation2d(0.26515, -0.2215), // front right
-            new Translation2d(-0.25451, 0.2065), // back left - changed values because the chassis is curved. prev values were: -0.26515, 0.2215, change values are -0.25451, 0.2065
+            new Translation2d(-0.25451, 0.2065), // back left - changed values because the chassis is curved. prev
+                                                 // values were: -0.26515, 0.2215, change values are -0.25451, 0.2065
             new Translation2d(-0.26515, -0.2215) // back right
     );
 

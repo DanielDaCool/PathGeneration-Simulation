@@ -5,16 +5,12 @@
 package frc.robot;
 
 import frc.robot.Path.FollowPath;
-import frc.robot.Path.FollowSection;
 //import frc.robot.Constants.OperatorConstants;
 import frc.robot.Path.PathGenerator;
 import frc.robot.Path.PathPoint;
 import frc.robot.commands.Drive;
-import frc.robot.commands.GoToLoadingStation;
-import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.chassis.Chassis;
-import frc.robot.subsystems.chassis.ChassisConstants;
-import edu.wpi.first.math.Pair;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -25,8 +21,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -60,58 +54,32 @@ public class RobotContainer {
     chassis = Chassis.GetInstance();
     chassis.setDefaultCommand(new Drive(chassis, new XboxController(0)));
     SmartDashboard.putData(chassis);
-    TrajectoryConfig config = new TrajectoryConfig(2, 2);
-    Pose2d one = new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(0));
-    Pose2d two = new Pose2d(new Translation2d(0, 2), Rotation2d.fromDegrees(180));
-    Pose2d three = new Pose2d(new Translation2d(4, 2), Rotation2d.fromDegrees(180));
-    Pose2d four = new Pose2d(new Translation2d(0, 4), Rotation2d.fromDegrees(90));
-    Pose2d five = new Pose2d(new Translation2d(7, 6.5), Rotation2d.fromDegrees(0));
-    Pose2d six = new Pose2d(new Translation2d(10,6.8), Rotation2d.fromDegrees(-90));
-    Pose2d seven = new Pose2d(new Translation2d(9.4, 8), Rotation2d.fromDegrees(0));
-    Pose2d eight = new Pose2d(new Translation2d(0, 8), Rotation2d.fromDegrees(-67));
-    Pose2d nine = new Pose2d(new Translation2d(1, 2), Rotation2d.fromDegrees(0));
+    TrajectoryConfig config = new TrajectoryConfig(6, 4);
+    Pose2d one = new Pose2d(new Translation2d(0, 0), Rotation2d.fromDegrees(45));
+    Pose2d two = new Pose2d(new Translation2d(2, 4), Rotation2d.fromDegrees(90));
+    Pose2d three = new Pose2d(new Translation2d(4, 0), Rotation2d.fromDegrees(91));
+    Pose2d four = new Pose2d(new Translation2d(6, 1), Rotation2d.fromDegrees(180));
+    Pose2d five = new Pose2d(new Translation2d(14, 3), Rotation2d.fromDegrees(0));
+    Pose2d six = new Pose2d(new Translation2d(3, 6.8), Rotation2d.fromDegrees(0));
+    Pose2d seven = new Pose2d(new Translation2d(9.4, 8), Rotation2d.fromDegrees(45));
+    Pose2d eight = new Pose2d(new Translation2d(0, 8), Rotation2d.fromDegrees(-270));
+    Pose2d nine = new Pose2d(new Translation2d(0.65, 2), Rotation2d.fromDegrees(-270));
 
-     oneP = new PathPoint(one, 3, 0);
-     twoP = new PathPoint(two, 3, 1);
-     threeP = new PathPoint(three,  1, 14124);
-     fourP = new PathPoint(four, 1, 0.4);
-    PathPoint fiveP = new PathPoint(five, 1, 0);
-    PathPoint sixP = new PathPoint(six, 3, 0.4);
-    PathPoint sevenP = new PathPoint(seven, 3, 0);
-    PathPoint eightP = new PathPoint(eight, 1, 124124124);
+    oneP = new PathPoint(one, 1, 0);
+    twoP = new PathPoint(two, 1, 0.5);
+    threeP = new PathPoint(three, 1, 0.5);
+    fourP = new PathPoint(four, 1, 0.4);
+    PathPoint fiveP = new PathPoint(five, 6, 0.3);
+    PathPoint sixP = new PathPoint(six, 6, 0.4);
+    PathPoint sevenP = new PathPoint(seven, 3, 0.4);
+    PathPoint eightP = new PathPoint(eight, 1, 0.5);
     PathPoint nineP = new PathPoint(nine, 0, 0);
-
-
 
     SmartDashboard.putData(field);
 
-    pathgen = new PathGenerator(config, oneP, twoP, threeP, fourP, fiveP, sixP, sevenP,eightP,nineP);
+    pathgen = new PathGenerator(config, oneP, twoP, threeP, fourP, fiveP, sixP, sevenP, eightP, nineP);
     traj = pathgen.generateTrajectory();
     origin = pathgen.getOriginalPoints();
-    // Configure the trigger bindings
-    configureBindings();
-  }
-
-  /**
-   * Use this method to define your trigger->command mappings. Triggers can be
-   * created via the
-   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with
-   * an arbitrary
-   * predicate, or via the named factories in {@link
-   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for
-   * {@link
-   * CommandXboxController
-   * Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-   * PS4} controllers or
-   * {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
-   * joysticks}.
-   */
-  private void configureBindings() {
-    // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-
-    // Schedule `exampleMethodCommand` when the Xbox controller's B button is
-    // pressed,
-    // cancelling on release.
 
   }
 
@@ -121,11 +89,13 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // return new InstantCommand(() -> {
-    //   field.getObject("path").setTrajectory(traj);
-    //   field.getObject("OG").setTrajectory(origin);
-    // }).andThen(new FollowPath(pathgen.generatePathPointArray(), 2, 12/50., chassis, chassis::setVelocities, chassis::getPose,
-    // chassis::getVelocity));
-    return GoToLoadingStation.go(chassis);
+    TrajectoryConfig config = new TrajectoryConfig(6, 4);
+    return new InstantCommand(() -> {
+      field.getObject("path").setTrajectory(traj);
+      field.getObject("OG").setTrajectory(origin);
+    }).andThen(
+        new FollowPath(pathgen.generatePathPointArray(),
+            config, chassis, chassis::setVelocities, chassis::getPose,
+            chassis::getVelocity, chassis::getAngularVelocity));
   }
 }

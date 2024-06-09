@@ -12,56 +12,61 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.Subsystem;
-import frc.robot.subsystems.chassis.Chassis;
 
 public class FollowSection extends CommandBase {
   /** Creates a new FollowSection. */
   PathPoint first;
   PathPoint second;
-  TrapezoidMotion trapezoid;
+  TrapezoidMotion moveTrapezoid;
+  TrapezoidMotion rotateTrapzoid;
+
   Subsystem subsystem;
   double maxSpeed;
   double maxAcceleration;
   Consumer<ChassisSpeeds> setSpeeds;
   Supplier<Pose2d> getPose;
   Supplier<Translation2d> getVelocity;
-  PIDController posPid;
-  PIDController rotPid;
-  double[] line;
+  PIDController positionPid;
+  PIDController rotationPid;
+  double[] path;
+  Supplier<Rotation2d> angularVelocity;
+  double AngleDistance;
 
-  public FollowSection(PathPoint first, PathPoint second, double maxSpeed, double maxAcceleration,
+  public FollowSection(PathPoint first, PathPoint second, TrajectoryConfig config,
       Subsystem subsystem, Consumer<ChassisSpeeds> setSpeeds, Supplier<Pose2d> getPose,
-      Supplier<Translation2d> getVelocity,
-      double kp, double ki, double kd, double rotKp, double rotKi, double rotKd) {
+      Supplier<Translation2d> getVelocity, Supplier<Rotation2d> angularVelocity,
+      PIDController positionPid, PIDController rotationPid) {
     this.first = first;
     this.second = second;
 
     this.subsystem = subsystem;
-    this.maxSpeed = maxSpeed;
-    this.maxAcceleration = maxAcceleration;
+    maxSpeed = config.getMaxVelocity();
+    maxAcceleration = config.getMaxAcceleration();
     this.setSpeeds = setSpeeds;
     this.getPose = getPose;
+    this.angularVelocity = angularVelocity;
     this.getVelocity = getVelocity;
-    posPid = new PIDController(kp, ki, kd);
-    rotPid = new PIDController(rotKp, rotKi, rotKd);
-    // Use addRequirements() here to declare subsystem dependencies.
+    this.positionPid = positionPid;
+    this.rotationPid = rotationPid;
+
     addRequirements(subsystem);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    // find the algebric reprezentation of the line of the followed path
     Translation2d firstTranslation = first.pose.getTranslation();
     Translation2d secondTranslation = second.pose.getTranslation();
-    double[] tempLine = {
-        secondTranslation.getY() - firstTranslation.getY(),
-        firstTranslation.getX() - secondTranslation.getX(),
-        secondTranslation.getX() * firstTranslation.getY() - firstTranslation.getX() * secondTranslation.getY()
-    };
-    line = tempLine;
-    trapezoid = new TrapezoidMotion(second.pose.getTranslation().minus(first.pose.getTranslation()).getNorm(),
+    path = new double[3];
+    path[0] = secondTranslation.getY() - firstTranslation.getY();
+    path[1] = firstTranslation.getX() - secondTranslation.getX();
+    path[2] = secondTranslation.getX() * firstTranslation.getY() - firstTranslation.getX() * secondTranslation.getY();
+
+    moveTrapezoid = new TrapezoidMotion(second.pose.getTranslation().minus(first.pose.getTranslation()).getNorm(),
         second.velocitySize, maxSpeed, maxAcceleration,
         () -> {
           return getPose.get().getTranslation().minus(first.pose.getTranslation()).rotateBy(
@@ -69,39 +74,81 @@ public class FollowSection extends CommandBase {
         }, () -> {
           return getVelocity.get().getNorm();
         });
+    AngleDistance = getAngleDistanceForTrapezoid(
+        second.pose.getRotation().getDegrees(), getPose.get().getRotation().getDegrees());
+
+    rotateTrapzoid = new TrapezoidMotion(getPose.get().getRotation().getDegrees() + Math.abs(AngleDistance), 0,
+        360, 720 * 0.02,
+        () -> {
+          return Math.abs(getPose.get().getRotation().getDegrees());
+        },
+        () -> {
+          return Math.abs(angularVelocity.get().getDegrees());
+        });
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    Translation2d pose = getPose.get().getTranslation();
-    Translation2d vec = second.pose.getTranslation().minus(first.pose.getTranslation());
-    double error = -pose.minus(first.pose.getTranslation())
-      .rotateBy(new Rotation2d(vec.getX(),-vec.getY())).getY();
-    double correctionSize = Math.abs(posPid.calculate(error));
-    Translation2d spvelTranslation;
-    if (!first.isCircle || !second.isCircle) {
-      double spvel = trapezoid.calculate();
-      spvelTranslation = new Translation2d(spvel, first.velociotyTranslation.getAngle());
-    } else {
-      spvelTranslation = first.velociotyTranslation;
-    }
-    Translation2d correction = new Translation2d(correctionSize,
-    first.velociotyTranslation.rotateBy(Rotation2d.fromDegrees(90 * Math.signum(error))).getAngle());
-    Translation2d res = spvelTranslation.plus(correction);
-    double rotTarget = normalaizeAngle(getPose.get().getRotation().getDegrees(), second.pose.getRotation().getDegrees());
-    rotPid.setSetpoint(rotTarget);
-    double angularVelocity = -rotPid.calculate(getPose.get().getRotation().getDegrees());
+    Translation2d currentPose = getPose.get().getTranslation();
 
-    //System.out.println("T: " + rotTarget + " PPROT: " + second.pose.getRotation().getDegrees() + " VEL: " +  angularVelocity);
-    setSpeeds.accept(new ChassisSpeeds(res.getX(), res.getY(), Math.toRadians(-angularVelocity)));
+    // calculate the on path velocity vector
+    Translation2d velocityOnPath;
+    if (!first.isCircle || !second.isCircle) {
+      double velocityOnPathSize = moveTrapezoid.calculate();
+      velocityOnPath = new Translation2d(velocityOnPathSize, first.velociotyTranslation.getAngle());
+    } else {
+      velocityOnPath = first.velociotyTranslation;
+    }
+
+    // calculate the perpendicular to path velocity vector:
+    // calculate the path representing vector
+    Translation2d pathVector = second.pose.getTranslation().minus(first.pose.getTranslation());
+    // calculate the robot`s perpendicular distance to the path:
+    double perpendicularDistance = currentPose.minus(first.pose.getTranslation())
+        .rotateBy(new Rotation2d(pathVector.getX(), -pathVector.getY())).getY();
+    // use the PID to calculate the correction(perpendicular to the path velocity)
+    // velocioty size
+    double correctionSize = Math.abs(positionPid.calculate(perpendicularDistance));
+    System.out.println("perp dis  " + perpendicularDistance + " perpvel  " + correctionSize + " dir " + 90
+        * Math.signum(-perpendicularDistance));
+    // calculate the correction speed vector
+    Translation2d correctionVector = new Translation2d(correctionSize,
+        first.velociotyTranslation.rotateBy(Rotation2d.fromDegrees(90 * Math.signum(-perpendicularDistance)))
+            .getAngle());
+
+    Translation2d combinedVelocity = velocityOnPath.plus(correctionVector);
+
+    // calculate rotation
+    // calculate PID correction
+    double rotTarget = recalculateAngle(getPose.get().getRotation().getDegrees(),
+        second.pose.getRotation().getDegrees());
+    rotationPid.setSetpoint(rotTarget);
+    // Add angle correction
+    // angularVelocity +=
+    // -rotPid.calculate(getPose.get().getRotation().getDegrees());
+
+    // set the calculated speeds.
+    setSpeeds
+        .accept(
+            new ChassisSpeeds(combinedVelocity.getX(), combinedVelocity.getY(), Math.toRadians(rotationPid.calculate(
+                getPose.get().getRotation().getDegrees()))));
   }
 
-  private double normalaizeAngle(double currentAngle, double spAngle){
+  private double recalculateAngle(double currentAngle, double spAngle) {
     double res = spAngle;
-    if(Math.abs(spAngle) - Math.abs(currentAngle) > 180)
-      res = res - 360;
+    if (Math.abs(spAngle - currentAngle) > 180)
+      res = res - 360 * Math.signum(res);
     return res;
+  }
+
+  private double getAngleDistanceForTrapezoid(double wantedAngle, double currentAngle) {
+    double distance = wantedAngle - currentAngle;
+    if (Math.abs(distance) > 180) {
+      distance += Math.signum(-distance) * 360;
+    }
+    System.out.println("CALC A: " + distance);
+    return distance;
   }
 
   // Called once the command ends or is interrupted.
@@ -113,6 +160,6 @@ public class FollowSection extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return trapezoid.isFinished();
+    return moveTrapezoid.isFinished();
   }
 }

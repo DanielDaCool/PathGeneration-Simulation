@@ -2,8 +2,6 @@ package frc.robot.utilities;
 
 import java.util.function.DoubleSupplier;
 
-import com.fasterxml.jackson.databind.ser.std.StdKeySerializers.Default;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -34,12 +32,12 @@ public final class UtilsGeneral {
      */
     public static double getAngleDifference(double current, double target) {
         double difference = (target - current) % 360;
-        return difference - ((int)difference / 180) * 360;
+        return difference - ((int) difference / 180) * 360;
     }
 
-    public static Pose2d TwoPose2dAverage(Pose2d pos1, Pose2d pos2){
-        return new Pose2d(new Translation2d((pos1.getX() + pos2.getX())/2, (pos1.getY() + pos2.getY())/2)
-            , Rotation2d.fromDegrees((pos1.getRotation().getDegrees() + pos2.getRotation().getDegrees())/2));
+    public static Pose2d TwoPose2dAverage(Pose2d pos1, Pose2d pos2) {
+        return new Pose2d(new Translation2d((pos1.getX() + pos2.getX()) / 2, (pos1.getY() + pos2.getY()) / 2),
+                Rotation2d.fromDegrees((pos1.getRotation().getDegrees() + pos2.getRotation().getDegrees()) / 2));
     }
 
     /**
@@ -191,25 +189,25 @@ public final class UtilsGeneral {
         return getAllianceWithDeafult() == Alliance.Red;
     }
 
-    public static Alliance getAllianceWithDeafult(){
-        switch (DriverStation.getAlliance()){
+    public static Alliance getAllianceWithDeafult() {
+        switch (DriverStation.getAlliance()) {
             case Blue:
                 return Alliance.Blue;
             case Red:
                 return Alliance.Red;
             default:
                 return deafultAlliance.getSelected();
-        }      
+        }
     }
 
-    public static void initializeDeafultAllianceChooser(){
+    public static void initializeDeafultAllianceChooser() {
         deafultAlliance.addOption("BLUE", Alliance.Blue);
         deafultAlliance.addOption("Red", Alliance.Red);
         deafultAlliance.setDefaultOption("BLUE", Alliance.Blue);
         SmartDashboard.putData("Default Alliance", deafultAlliance);
     }
 
-        /**
+    /**
      * The zone the robot is in
      */
     public static enum Zone {
@@ -262,7 +260,6 @@ public final class UtilsGeneral {
         }
         return translation;
     }
-
 
     /**
      * Puts a Sendable to the SmartDashboard with the given key and name
