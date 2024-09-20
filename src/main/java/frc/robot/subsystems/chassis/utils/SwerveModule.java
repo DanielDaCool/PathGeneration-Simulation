@@ -16,7 +16,7 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import frc.robot.subsystems.chassis.ChassisConstants;
 import frc.robot.subsystems.chassis.ChassisConstants.SwerveModuleConstants;
-import frc.robot.subsystems.chassis.utils.simulation.Gyro;
+import frc.robot.subsystems.chassis.utils.simulation.SimulateGyro;
 import frc.robot.subsystems.chassis.utils.simulation.SimulateMotor;
 import frc.robot.utilities.UtilsGeneral;
 
@@ -26,7 +26,7 @@ import frc.robot.utilities.UtilsGeneral;
 public class SwerveModule implements Sendable {
     private double desiredVelocity, desiredAngle;
     private final SimulateMotor moveMotor, angleMotor;
-    private final Gyro absoluteEncoder;
+    private final SimulateGyro absoluteEncoder;
 
     /**
      * Creates a new SwerveModule
@@ -36,7 +36,7 @@ public class SwerveModule implements Sendable {
     public SwerveModule(SwerveModuleConstants constants) {
         moveMotor = new SimulateMotor();
         angleMotor = new SimulateMotor();
-        absoluteEncoder = new Gyro();
+        absoluteEncoder = new SimulateGyro();
 
         desiredAngle = 0;
         desiredVelocity = 0;

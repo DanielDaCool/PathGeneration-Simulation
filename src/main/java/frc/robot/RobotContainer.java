@@ -14,6 +14,7 @@ import frc.robot.subsystems.chassis.Chassis;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.XboxController;
@@ -21,6 +22,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -49,6 +51,7 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
+
     field = new Field2d();
     Chassis.CreateInstance();
     chassis = Chassis.GetInstance();
@@ -89,13 +92,16 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    TrajectoryConfig config = new TrajectoryConfig(6, 4);
-    return new InstantCommand(() -> {
-      field.getObject("path").setTrajectory(traj);
-      field.getObject("OG").setTrajectory(origin);
-    }).andThen(
-        new FollowPath(pathgen.generatePathPointArray(),
-            config, chassis, chassis::setVelocities, chassis::getPose,
-            chassis::getVelocity, chassis::getAngularVelocity));
+    // TrajectoryConfig config = new TrajectoryConfig(6, 4);
+    // return new InstantCommand(() -> {
+    // field.getObject("path").setTrajectory(traj);
+    // field.getObject("OG").setTrajectory(origin);
+    // }).andThen(
+    // new FollowPath(pathgen.generatePathPointArray(),
+    // config, chassis, chassis::setVelocities, chassis::getPose,
+    // chassis::getVelocity, chassis::getAngularVelocity));
+    return new RunCommand(() -> {
+      chassis.setVelocities(1, 0, 0);
+    }, chassis);
   }
 }

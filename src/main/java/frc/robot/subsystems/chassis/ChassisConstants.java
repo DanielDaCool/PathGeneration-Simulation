@@ -64,7 +64,7 @@ public class ChassisConstants {
         public static final SwerveModuleConstants BACK_RIGHT = new SwerveModuleConstants(218.49609375, 3, 4, 12);
     }
 
-    public static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(
+    public static final SwerveKinematics KINEMATICS = new SwerveKinematics(
             new Translation2d(0.26515, 0.2215), // front left
             new Translation2d(0.26515, -0.2215), // front right
             new Translation2d(-0.25451, 0.2065), // back left - changed values because the chassis is curved. prev

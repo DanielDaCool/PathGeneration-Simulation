@@ -7,22 +7,24 @@ package frc.robot.subsystems.chassis.utils.simulation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class Gyro extends SubsystemBase {
+public class SimulateGyro extends SubsystemBase {
   private double angle;
   private double speedDS;
-  private Double timeStamp  = Timer.getFPGATimestamp();
-  /** Creates a new Gyro. */
-  public Gyro() {}
+  private Double timeStamp = Timer.getFPGATimestamp();
 
-  public void setAngle(double angle){
+  /** Creates a new Gyro. */
+  public SimulateGyro() {
+  }
+
+  public void setAngle(double angle) {
     this.angle = angle;
   }
 
-  public double GetAngle(){
+  public double GetAngle() {
     return angle;
   }
 
-  public void setSpeedDS(double d){
+  public void setSpeedDS(double d) {
     speedDS = d;
   }
 

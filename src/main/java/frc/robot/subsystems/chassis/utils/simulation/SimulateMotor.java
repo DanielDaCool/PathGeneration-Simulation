@@ -4,6 +4,9 @@
 
 package frc.robot.subsystems.chassis.utils.simulation;
 
+import java.util.Arrays;
+import java.util.stream.Stream;
+
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -49,6 +52,6 @@ public class SimulateMotor extends SubsystemBase {
     builder.addDoubleProperty("ENC", () -> {
       return encoder;
     }, null);
+    
   }
-
 }

@@ -28,7 +28,7 @@ import frc.robot.Constants;
 // import frc.robot.commands.chassis.PPSwerveControl;
 import frc.robot.subsystems.chassis.ChassisConstants.SwerveModuleConstants;
 import frc.robot.subsystems.chassis.utils.SwerveModule;
-import frc.robot.subsystems.chassis.utils.simulation.Gyro;
+import frc.robot.subsystems.chassis.utils.simulation.SimulateGyro;
 import frc.robot.utilities.UtilsGeneral;
 
 /**
@@ -39,7 +39,7 @@ public class Chassis extends SubsystemBase {
 
     public final Field2d field;
     private final SwerveModule[] modules;
-    private final Gyro gyro;
+    private final SimulateGyro gyro;
     private final SwerveDrivePoseEstimator poseEstimator;
     private final PIDController angleController;
     private boolean isBreak;
@@ -71,7 +71,7 @@ public class Chassis extends SubsystemBase {
         field = new Field2d();
         pathDisplay = new Field2d();
         // gyro = new PigeonIMU(14);
-        gyro = new Gyro();
+        gyro = new SimulateGyro();
         modules = new SwerveModule[] {
                 new SwerveModule(SwerveModuleConstants.FRONT_LEFT),
                 new SwerveModule(SwerveModuleConstants.FRONT_RIGHT),
@@ -154,7 +154,8 @@ public class Chassis extends SubsystemBase {
             stop();
         else {
             ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(vx, vy, omega, getRotation());
-            SwerveModuleState[] states = ChassisConstants.KINEMATICS.toSwerveModuleStates(speeds);
+            SwerveModuleState[] states = ChassisConstants.KINEMATICS.toSwerveModuleStates(speeds, getPose(),
+                    getModuleStates());
             setModuleStates(states);
         }
     }
