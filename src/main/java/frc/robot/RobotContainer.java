@@ -101,7 +101,7 @@ public class RobotContainer {
     // config, chassis, chassis::setVelocities, chassis::getPose,
     // chassis::getVelocity, chassis::getAngularVelocity));
     return new RunCommand(() -> {
-      chassis.setVelocities(1, 0, 0);
+      chassis.setVelocities(0, 0, 2);
     }, chassis);
   }
 }

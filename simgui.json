@@ -1,4 +1,11 @@
 {
+  "HALProvider": {
+    "Other Devices": {
+      "window": {
+        "visible": false
+      }
+    }
+  },
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
@@ -42,11 +49,6 @@
           "weight": 5.0,
           "width": 0.10000000149011612
         },
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Trajectory": {
         "window": {
           "visible": true
         }
