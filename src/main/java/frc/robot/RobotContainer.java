@@ -100,8 +100,9 @@ public class RobotContainer {
     // new FollowPath(pathgen.generatePathPointArray(),
     // config, chassis, chassis::setVelocities, chassis::getPose,
     // chassis::getVelocity, chassis::getAngularVelocity));
+
     return new RunCommand(() -> {
-      chassis.setVelocities(0, 0, 2);
+      chassis.setVelocities(0, 0, 1);
     }, chassis);
   }
 }

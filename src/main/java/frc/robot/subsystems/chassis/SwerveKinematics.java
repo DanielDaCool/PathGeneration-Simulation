@@ -26,6 +26,8 @@ public class SwerveKinematics extends SwerveDriveKinematics {
 
     public SwerveModuleState[] states;
     private final double MIN_ANGLE_DIFF = 5 * 0.02;
+    private final double MAX_ANGLE_DIFF = 40;
+
 
     Translation2d[] moduleTranslationsMeters;
     private ChassisSpeeds lastSpeeds = new ChassisSpeeds();
@@ -56,6 +58,7 @@ public class SwerveKinematics extends SwerveDriveKinematics {
 
     
     public SwerveModuleState calcStateCurve(Rotation2d alpha, Pose2d estimatedPose, SwerveModuleState prevState, Pose2d curPose, Translation2d moduleLocationDifference){
+        if(Math.abs(alpha.getDegrees())>=MAX_ANGLE_DIFF)alpha=new Rotation2d(Math.toRadians(MAX_ANGLE_DIFF*Math.abs(alpha.getRadians())/alpha.getRadians()));
         double radius =  (moduleLocationDifference.getNorm() * Math.sin((Math.PI / 2) - alpha.getRadians()))  / Math.sin(alpha.getRadians() * 2);
         double moduleV = alpha.times(2 * radius).getRadians() / 0.02; // (2alpha * d * sin(0.5pi - alpha)/sin(2alpha))/0.02 = Vn
 
@@ -98,9 +101,15 @@ public class SwerveKinematics extends SwerveDriveKinematics {
             : calcStateLine(prevStates[i], estimatedPose, curPose, speeds);
             lastSpeeds = speeds;
         }
+        System.out.println("("+newModuleStates[0].speedMetersPerSecond+","+newModuleStates[0].angle+")");
+        System.out.println("("+newModuleStates[1].speedMetersPerSecond+","+newModuleStates[1].angle+")");
+        System.out.println("("+newModuleStates[2].speedMetersPerSecond+","+newModuleStates[2].angle+")");
+        System.out.println("("+newModuleStates[3].speedMetersPerSecond+","+newModuleStates[3].angle+")");
+
 
         return newModuleStates;
     }
+
 
     /**
      * Rotate the speeds back to omega - to drive stright
